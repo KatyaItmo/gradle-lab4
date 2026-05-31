@@ -51,3 +51,4 @@ tasks.register('team', Zip) {
     archiveFileName 'team.zip'
     destinationDirectory = layout.buildDirectory.dir('distributions')
 }
+
