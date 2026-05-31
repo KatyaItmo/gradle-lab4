@@ -24,15 +24,13 @@ test {
     useJUnitPlatform()
 }
 
-test.mustRunAfter war
+test.mustRunAfter(war)
 
 tasks.register('copyFront', Copy) {
     dependsOn ':frontend:buildFront'
     from project(':frontend').file('build')
     into file('src/main/webapp')
 }
-
-war.dependsOn copyFront
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'

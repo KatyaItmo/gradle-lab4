@@ -23,12 +23,21 @@ tasks.register('createBat') {
         def commitsCount = 3
         def scriptText = "@echo off\n"
         scriptText += "mkdir build\\archived-wars 2>nul\n"
+        scriptText += "mkdir build\\temp-frontend 2>nul\n"
+        scriptText += "call .\\gradlew :frontend:buildFront\n"
+        scriptText += "xcopy /E /I /Y frontend\\build build\\temp-frontend\n"
         (0..<commitsCount).each { index ->
             scriptText += "call git worktree add build\\worktree-${index} HEAD~${index}\n"
+            scriptText += "echo. > build\\worktree-${index}\\settings.gradle\n"
+            def webappPath = "build\\worktree-${index}\\backend\\src\\main\\webapp"
+            scriptText += "mkdir ${webappPath} 2>nul\n"
+            scriptText += "xcopy /E /I /Y build\\temp-frontend ${webappPath}\n"
             scriptText += "call .\\gradlew -p build\\worktree-${index} :backend:war\n"
             scriptText += "copy build\\worktree-${index}\\backend\\build\\libs\\backend.war build\\archived-wars\\backend-${index + 1}.war\n"
             scriptText += "call git worktree remove build\\worktree-${index} --force\n"
         }
+        scriptText += "rmdir /s /q build\\temp-frontend\n"
+        scriptText += "call git worktree prune\n"
         def scriptFile = file("build/run-git-builds.bat")
         scriptFile.parentFile.mkdirs()
         scriptFile.write(scriptText, "UTF-8")
@@ -49,7 +58,7 @@ tasks.register('runBat', Exec) {
 tasks.register('team', Zip) {
     dependsOn('runBat')
     from 'build/archived-wars'
-    archiveFileName 'team.zip'
-    destinationDirectory = layout.buildDirectory.dir('distributions')
+    archiveFileName.set('team.zip')
+    destinationDirectory.set(layout.buildDirectory.dir('distributions'))
 }
 
