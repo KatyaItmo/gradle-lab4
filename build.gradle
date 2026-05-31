@@ -1,0 +1,53 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+tasks.register('music', Exec) {
+    def soundFile = file('good-dumplings.mp3')
+    if (soundFile.exists()) {
+        commandLine 'cmd', '/c', 'start', soundFile.absolutePath
+    }
+}
+
+build.finalizedBy 'music'
+
+tasks.register('createBat') {
+    doLast {
+        if (file('build/run-git-builds.bat').exists()) {
+            delete(file('build/run-git-builds.bat'))
+        }
+        def commitsCount = 3
+        def scriptText = "@echo off\n"
+        scriptText += "mkdir build\\archived-wars 2>nul\n"
+        (0..<commitsCount).each { index ->
+            scriptText += "call git worktree add build\\worktree-${index} HEAD~${index}\n"
+            scriptText += "call .\\gradlew -p build\\worktree-${index} :backend:war\n"
+            scriptText += "copy build\\worktree-${index}\\backend\\build\\libs\\backend.war build\\archived-wars\\backend-${index + 1}.war\n"
+            scriptText += "call git worktree remove build\\worktree-${index} --force\n"
+        }
+        def scriptFile = file("build/run-git-builds.bat")
+        scriptFile.parentFile.mkdirs()
+        scriptFile.write(scriptText, "UTF-8")
+    }
+}
+
+tasks.register('runBat', Exec) {
+    dependsOn('createBat')
+    doFirst {
+        if (file('build/archived-wars').exists()) {
+            delete(file('build/archived-wars'))
+        }
+    }
+    commandLine 'cmd', '/c', file('build/run-git-builds.bat').absolutePath
+}
+
+tasks.register('team', Zip) {
+    dependsOn('runBat')
+    from 'build/archived-wars'
+    archiveFileName 'team.zip'
+    destinationDirectory = layout.buildDirectory.dir('distributions')
+}

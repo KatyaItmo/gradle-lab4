@@ -1,0 +1,4 @@
+rootProject.name = 'gradle-lab4'
+
+include 'backend'
+include 'frontend'
