@@ -32,6 +32,8 @@ tasks.register('copyFront', Copy) {
     into file('src/main/webapp')
 }
 
+
+
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
