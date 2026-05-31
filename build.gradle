@@ -45,6 +45,7 @@ tasks.register('runBat', Exec) {
     commandLine 'cmd', '/c', file('build/run-git-builds.bat').absolutePath
 }
 
+
 tasks.register('team', Zip) {
     dependsOn('runBat')
     from 'build/archived-wars'
