@@ -12,6 +12,6 @@ public class Version {
 
     @GET
     public Response getVersion() {
-        return Response.ok("{\"message\": \"6\"}").build();
+        return Response.ok("{\"message\": \"7\"}").build();
     }
 }
