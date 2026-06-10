@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  db-postgres:
+    image: postgres:15-alpine
+    container_name: lab4_database
+    environment:
+      POSTGRES_DB: db_lab4web
+      POSTGRES_USER: admin67
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+
+  web-app:
+    build: .
+    environment:
+      - DB_DBNAME=db_lab4web
+      - DB_USER=admin67
+      - DB_PASS=password
+      - DB_HOST=db-postgres
+      - DB_PORT=5432
+    container_name: lab4_backend
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db-postgres
