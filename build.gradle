@@ -6,6 +6,12 @@ repositories {
     mavenCentral()
 }
 
+tasks.register('cleanAll', Delete) {
+    dependsOn(':frontend:cleanFront')
+    dependsOn(':backend:cleanBack')
+    delete 'build'
+}
+
 tasks.register('music', Exec) {
     def soundFile = file('good-dumplings.mp3')
     if (soundFile.exists()) {
@@ -28,7 +34,7 @@ tasks.register('createBat') {
         scriptText += "xcopy /E /I /Y frontend\\build build\\temp-frontend\n"
         (0..<commitsCount).each { index ->
             scriptText += "call git worktree add build\\worktree-${index} HEAD~${index}\n"
-            scriptText += "echo. > build\\worktree-${index}\\settings.gradle\n"
+            scriptText += "echo include 'backend' > build\\worktree-${index}\\settings.gradle\n"
             def webappPath = "build\\worktree-${index}\\backend\\src\\main\\webapp"
             scriptText += "mkdir ${webappPath} 2>nul\n"
             scriptText += "xcopy /E /I /Y build\\temp-frontend ${webappPath}\n"

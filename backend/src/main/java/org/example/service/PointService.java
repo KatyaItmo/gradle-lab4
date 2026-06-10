@@ -61,10 +61,16 @@ public class PointService {
 		
 		return makeResult(points);
 	}
-	
+
 	public void clearHistory(String login) {
-		em.createQuery("DELETE FROM Point p WHERE p.user.login = :login")
+		// 1. Сначала находим пользователя по логину
+		User user = em.createQuery("SELECT u FROM User u WHERE u.login = :login", User.class)
 				.setParameter("login", login)
+				.getSingleResult();
+
+		// 2. Удаляем точки напрямую по полученному user_id
+		em.createQuery("DELETE FROM Point p WHERE p.user = :user")
+				.setParameter("user", user)
 				.executeUpdate();
 	}
 	

@@ -14,3 +14,7 @@ tasks.register('buildFront', NpmTask) {
     inputs.file file('package.json')
     outputs.dir file('build')
 }
+
+tasks.register('cleanFront', Delete) {
+    delete 'build'
+}

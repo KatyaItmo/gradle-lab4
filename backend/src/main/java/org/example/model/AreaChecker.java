@@ -59,7 +59,7 @@ public class AreaChecker {
 		return x.pow(2).add(y.pow(2)).compareTo(r.multiply(new BigDecimal(k)).pow(2)) <= 0;
 	}
 
-	private static boolean validateForm(BigDecimal x, BigDecimal y, BigDecimal r, boolean isClick) {
+	protected static boolean validateForm(BigDecimal x, BigDecimal y, BigDecimal r, boolean isClick) {
 		try {
 			boolean xValid;
 			boolean yValid;

@@ -11,10 +11,9 @@ function Main() {
     const svgRef = useRef(null);
     const dispatch = useDispatch();
 
-    const history = useSelector(state => state.history); // Тут храним ВСЕ точки для графика
+    const history = useSelector(state => state.history);
     const r = useSelector(state => state.currentR);
 
-    // Добавляем стейты для пагинации таблицы
     const [tableData, setTableData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
@@ -25,22 +24,19 @@ function Main() {
 
     const K = 30;
 
-    // СИНХРОНИЗАЦИЯ: два запроса каждые 500мс
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // 1. Запрос всех точек для ГРАФИКА
                 const resAll = await fetch('api/points/all', { credentials: 'include' });
                 if (resAll.ok) {
                     const allPoints = await resAll.json();
                     dispatch(setHistoryAction(allPoints));
                 }
 
-                // 2. Запрос страницы для ТАБЛИЦЫ
                 const resPage = await fetch(`api/points?page=${currentPage}&size=${pageSize}`, { credentials: 'include' });
                 if (resPage.ok) {
                     const pagePoints = await resPage.json();
-                    setTableData(pagePoints); // Локальный стейт только для таблицы
+                    setTableData(pagePoints);
                 }
             } catch (e) { console.error("Ошибка синхронизации", e); }
         };
@@ -48,7 +44,7 @@ function Main() {
         fetchData();
         const interval = setInterval(fetchData, 500);
         return () => clearInterval(interval);
-    }, [dispatch, currentPage]); // Перезапускаем при смене страницы
+    }, [dispatch, currentPage]);
 
     const handleInputChange = (val, setter) => {
         let normalized = val.replace(',', '.');
@@ -95,7 +91,20 @@ function Main() {
         sendPoint(null, calculatedX, calculatedY);
     };
 
-    // Отрисовка фигур с учетом зеркального отражения при R < 0
+    const handleRChange = (val) => {
+        let normalized = val.replace(',', '.');
+        if (/^-?\d*\.?\d*$/.test(normalized)) {
+            if (normalized === "" || normalized === "-") {
+                dispatch(setRAction(normalized));
+                return;
+            }
+            const num = parseFloat(normalized);
+            if (num >= -3 && num <= 5) {
+                dispatch(setRAction(normalized));
+            }
+        }
+    };
+
     const renderFigures = () => {
         const R = parseFloat(r);
         if (isNaN(R) || R === 0) return null;
@@ -147,17 +156,27 @@ function Main() {
                         </div>
                         <div className="input-row">
                             <label>R:</label>
-                            <button type="button" onClick={() => dispatch(setRAction(parseFloat(r)-1))}>-</button>
-                            <input type="text" value={r} onChange={(e) => dispatch(setRAction(e.target.value))} />
-                            <button type="button" onClick={() => dispatch(setRAction(parseFloat(r)+1))}>+</button>
+                            <button type="button" onClick={() => {
+                                const next = (parseFloat(r) || 0) - 1;
+                                if (next >= -3 && next <= 5) dispatch(setRAction(next));
+                            }}>-</button>
+
+                            <input type="text" value={r} onChange={(e) => handleRChange(e.target.value)} />
+
+                            <button type="button" onClick={() => {
+                                const next = (parseFloat(r) || 0) + 1;
+                                if (next >= -3 && next <= 5) dispatch(setRAction(next));
+                            }}>+</button>
                         </div>
                         <div className="btn-group">
                             <button type="submit" style={{background: '#27ae60'}}>Отправить</button>
                             <button type="button" onClick={() => {
-                                if(window.confirm("Очистить?")) {
-                                    fetch('api/points', { method: 'DELETE', credentials: 'include' })
-                                    .then(() => dispatch(clearHistoryAction()));
-                                }
+                                fetch('api/points', { method: 'DELETE', credentials: 'include' })
+                                    .then(() => {
+                                        dispatch(clearHistoryAction());
+                                        setCurrentPage(1); // сбрасываем на 1 страницу, раз данных больше нет
+                                    })
+                                    .catch(err => console.error("Ошибка при очистке", err));
                             }} style={{background: '#e74c3c'}}>Очистить</button>
                         </div>
                     </form>
@@ -177,7 +196,6 @@ function Main() {
                 </section>
 
                 <section className="table-section card">
-                    {/* Кнопки пагинации */}
                     <div className="pagination">
                         <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}>Назад</button>
                         <span> Страница {currentPage} </span>
