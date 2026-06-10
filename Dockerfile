@@ -1,10 +1,11 @@
 FROM gradle:8-jdk17 AS build
 WORKDIR /app/
 
-COPY build.gradle settings.gradle ./
-COPY backend/build.gradle ./backend/
+ARG REVISION=HEAD
 
-COPY backend/src ./backend/src
+RUN apt-get update && apt-get install -y git
+RUN git clone https://github.com/KatyaItmo/gradle-lab4.git . \
+    && git checkout $REVISION
 
 RUN gradle :backend:war --no-daemon
 

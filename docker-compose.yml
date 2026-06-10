@@ -12,7 +12,10 @@ services:
       - "5433:5432"
 
   web-app:
-    build: .
+    build:
+      context: .
+      args:
+        REVISION: "HEAD"
     environment:
       - DB_DBNAME=db_lab4web
       - DB_USER=admin67
@@ -22,5 +25,23 @@ services:
     container_name: lab4_backend
     ports:
       - "8081:8080"
+    depends_on:
+      - db-postgres
+
+
+  web-app-old:
+    build:
+      context: .
+      args:
+        REVISION: "HEAD~1"
+    environment:
+      - DB_DBNAME=db_lab4web
+      - DB_USER=admin67
+      - DB_PASS=password
+      - DB_HOST=db-postgres
+      - DB_PORT=5432
+    container_name: lab4_backend-old
+    ports:
+      - "8082:8080"
     depends_on:
       - db-postgres
