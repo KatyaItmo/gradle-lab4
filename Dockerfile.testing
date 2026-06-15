@@ -1,0 +1,27 @@
+FROM gradle:8-jdk17
+
+USER root
+
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    libgbm1 \
+    libnss3 \
+    libatk-bridge2.0-0 \
+    libgtk-3-0 \
+    libxss1 \
+    libasound2t64 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY build.gradle settings.gradle ./
+COPY backend/build.gradle ./backend/
+
+ENV PLAYWRIGHT_BROWSER_TO_DOWNLOAD=chromium
+
+RUN gradle :backend:testClasses --no-daemon
+
+COPY . .
+
+CMD ["gradle", ":backend:funcTest", "--no-daemon"]

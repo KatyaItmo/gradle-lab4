@@ -8,7 +8,7 @@ RUN git clone https://github.com/KatyaItmo/gradle-lab4.git . \
     && git checkout $REVISION
 
 RUN gradle :backend:war --no-daemon
-
+RUN gradle :backend:test --no-daemon
 
 FROM quay.io/wildfly/wildfly:26.1.2.Final-jdk17
 

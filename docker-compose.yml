@@ -27,6 +27,11 @@ services:
       - "8081:8080"
     depends_on:
       - db-postgres
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 
   web-app-old:
@@ -45,3 +50,16 @@ services:
       - "8082:8080"
     depends_on:
       - db-postgres
+
+
+  functional-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.testing
+    container_name: functional_tests
+    environment:
+      - BASE_URL=http://web-app:8080/
+    shm_size: '2gb'
+    depends_on:
+      web-app:
+        condition: service_healthy

@@ -174,7 +174,7 @@ function Main() {
                                 fetch('api/points', { method: 'DELETE', credentials: 'include' })
                                     .then(() => {
                                         dispatch(clearHistoryAction());
-                                        setCurrentPage(1); // сбрасываем на 1 страницу, раз данных больше нет
+                                        setCurrentPage(1);
                                     })
                                     .catch(err => console.error("Ошибка при очистке", err));
                             }} style={{background: '#e74c3c'}}>Очистить</button>
